@@ -1,10 +1,12 @@
 import pandas as pd
 from definitions import RAW_DATA_DIR, DATA_DIR
+from src.util.csv_persistence import read_from_csv, write_to_csv
+
 
 def main():
-    df = read_from_csv()
+    df = read_from_csv(RAW_DATA_DIR + "/csv/Play_by_play.csv")
     df = create_canonical_event_number(df)
-    write_to_csv(df)
+    write_to_csv(df, DATA_DIR + "/tables/Canonical_Events.csv")
 
 def create_canonical_event_number(dataframe):
     game_ids = dataframe['Game_id'].unique()
@@ -23,12 +25,6 @@ def create_canonical_event_number(dataframe):
         df = df.append(df_sorted)
     df = df.reset_index(drop=True)
     return df
-
-def read_from_csv():
-    return pd.read_csv(RAW_DATA_DIR + "/csv/Play_by_play.csv", index_col=False)
-
-def write_to_csv(df):
-    df.to_csv(DATA_DIR + "/tables/Canonical_Events.csv")
 
 if __name__ == "__main__":
     main()

@@ -2,6 +2,7 @@ import pandas as pd
 
 from definitions import RAW_DATA_DIR, DATA_DIR, PERIOD_START_EVENT_MSG_TYPE, PERIOD_START_ACTION_TYPE, \
     SUBSTITUTE_EVENT_MSG_TYPE
+from src.util.csv_persistence import read_from_csv, write_to_csv
 
 GAME_LINEUP_DATA = "/csv/Game_Lineup.csv"
 
@@ -10,23 +11,21 @@ def main():
     df = read_from_csv(RAW_DATA_DIR + GAME_LINEUP_DATA)
     df_lineups = get_period_starting_lineups(df)
     df_lineups = apply_subs(df_lineups)
-    write_to_csv(df_lineups)
+    write_to_csv(df_lineups, DATA_DIR + "/tables/Lineups.csv")
 
 
 def apply_subs(df_lineups):
-    print(len(df_lineups))
     df = read_from_csv(DATA_DIR + "/tables/Canonical_Events.csv")
     game_ids = df['Game_id'].unique()
-    # for game_id in game_ids:
-    game_id = game_ids[0]
-    x = df.loc[df['Game_id'] == game_id]
-    team_ids = x['Team_id'].unique()
-    for team_id in team_ids:
-        y = x.loc[x['Team_id'] == team_id]
-        for period in range(1, 4 + 1):
-            z = y.loc[y['Period'] == period]
-            z = z.loc[z['Event_Msg_Type'] == SUBSTITUTE_EVENT_MSG_TYPE]
-            df_lineups = process_substitution(z, df_lineups)
+    for game_id in game_ids:
+        x = df.loc[df['Game_id'] == game_id]
+        team_ids = x['Team_id'].unique()
+        for team_id in team_ids:
+            y = x.loc[x['Team_id'] == team_id]
+            for period in range(1, 4 + 1):
+                z = y.loc[y['Period'] == period]
+                z = z.loc[z['Event_Msg_Type'] == SUBSTITUTE_EVENT_MSG_TYPE]
+                df_lineups = process_substitution(z, df_lineups)
 
     df_lineups = df_lineups[df_lineups['Start_Canonical_Game_Event_Num'].notnull()]
     df_lineups = df_lineups[df_lineups['End_Canonical_Game_Event_Num'].notnull()]
@@ -53,7 +52,6 @@ def process_substitution(df_sub, df_lineups):
         df_lineups = df_lineups.append(new_lineup)
         df_lineups = df_lineups.append(previous_lineup)
 
-    print(len(df_lineups))
     return df_lineups
 
 def get_player_to_sub(lineup, player_id):
@@ -80,17 +78,15 @@ def get_period_starting_lineups(df):
     df_lineups = pd.DataFrame()
 
     game_ids = df['Game_id'].unique()
-    # for game_id in game_ids:
-    game_id = game_ids[0]
-
-    x = df.loc[df['Game_id'] == game_id]
-    team_ids = x['Team_id'].unique()
-    for team_id in team_ids:
-        y = x.loc[x['Team_id'] == team_id]
-        for period in range(1, 4 + 1):
-            z = y.loc[y['Period'] == period]
-            df_lineup_row = get_lineup_row(z)
-            df_lineups = df_lineups.append(df_lineup_row)
+    for game_id in game_ids:
+        x = df.loc[df['Game_id'] == game_id]
+        team_ids = x['Team_id'].unique()
+        for team_id in team_ids:
+            y = x.loc[x['Team_id'] == team_id]
+            for period in range(1, 4 + 1):
+                z = y.loc[y['Period'] == period]
+                df_lineup_row = get_lineup_row(z)
+                df_lineups = df_lineups.append(df_lineup_row)
     return df_lineups
 
 
@@ -123,12 +119,6 @@ def get_canonical_event_id(game_id, period):
 
     return df['Canonical_Game_Event_Num'].iloc[0]
 
-
-def read_from_csv(filepath):
-    return pd.read_csv(filepath, index_col=False)
-
-def write_to_csv(df):
-    df.to_csv(DATA_DIR + "/tables/Lineups.csv")
 
 if __name__ == "__main__":
     main()
