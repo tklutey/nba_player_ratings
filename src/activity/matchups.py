@@ -12,10 +12,10 @@ def get_matchup_by_game_ids(df_input, df_matchup=None):
     return df
 
 def create_side_labels(matchups):
-    a = matchups.loc[matchups['Team_id'] == matchups['Team1']]
+    a = matchups.loc[matchups['Team_id'] == matchups['Team1']].copy()
     a['Off_team'] = a['Team1']
     a['Def_team'] = a['Team2']
-    b = matchups.loc[matchups['Team_id'] != matchups['Team1']]
+    b = matchups.loc[matchups['Team_id'] != matchups['Team1']].copy()
     b['Off_team'] = b['Team2']
     b['Def_team'] = b['Team1']
     c = a.append(b)

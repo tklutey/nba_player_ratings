@@ -6,9 +6,9 @@ def process(df, suffix):
     x = pd.DataFrame()
     for i in range(1, 5+1):
         key = "Player" + str(i)
-        y = df[[key, 'Num_points']]
+        y = df[[key, 'Actualized_points']]
         y = y.rename(columns={key: "Player"})
-        y = y.rename(columns={'Num_points': "Num_points" + suffix})
+        y = y.rename(columns={'Actualized_points': "Actualized_points" + suffix})
 
         x = x.append(y)
     x['Possessions' + suffix] = 1
