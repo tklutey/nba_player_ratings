@@ -11,5 +11,5 @@ def get_player_points(df):
     df_defense = join_lineup_by_event_id(df.rename(columns={'Def_team': 'Team_id'}))
     defense = process(df_defense, 'defense')
 
-    x = pd.merge(left=offense, right=defense, how='inner', on=['Player'])
+    x = pd.merge(left=offense, right=defense, how='inner', on=['Player', 'Game_id'])
     return x

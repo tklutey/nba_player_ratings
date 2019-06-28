@@ -3,16 +3,17 @@ from src.activity import get_rating
 from src.activity.matchups import get_matchup_by_game_ids
 from src.converter import player_totals
 from src.handlers import made_fg, missed_fg, turnover, end_period, free_throw
-from src.util.csv_persistence import read_from_csv
+from src.util import csv_persistence
 
 
 def process_events():
-    df = read_from_csv(DATA_DIR + "/tables/Canonical_Events.csv")
+    df = csv_persistence.read_from_csv(DATA_DIR + "/tables/Canonical_Events.csv")
     df = get_matchup_by_game_ids(df)
     df = groom_columns(df)
     x = append_actualized_values(df)
     y = player_totals.get_player_points(x)
-    z = get_rating.get_rating(y)
+    z = get_rating.get_rating(y).reset_index(drop=True)
+    csv_persistence.write_to_csv(z, DATA_DIR + "/output/Ratings.csv")
     print(z)
 
 
