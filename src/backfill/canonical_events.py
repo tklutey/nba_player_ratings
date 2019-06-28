@@ -24,6 +24,7 @@ def create_canonical_event_number(dataframe):
 
         df = df.append(df_sorted)
     df = df.reset_index(drop=True)
+    df = df.rename(columns={"Option1": "Attempted_points"})
     return df
 
 if __name__ == "__main__":
