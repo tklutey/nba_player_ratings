@@ -126,5 +126,6 @@ dmypy.json
 # Project-specific
 /data/tables
 /data/raw/csv
+/data/output
 .DS_Store
 .idea/
