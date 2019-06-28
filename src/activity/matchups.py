@@ -11,6 +11,7 @@ def get_matchup_by_game_ids(df_input, df_matchup=None):
     df = create_side_labels(df)
     return df
 
+
 def create_side_labels(matchups):
     a = matchups.loc[matchups['Team_id'] == matchups['Team1']].copy()
     a['Off_team'] = a['Team1']
@@ -22,7 +23,7 @@ def create_side_labels(matchups):
     c = groom_columns(c)
     return c
 
+
 def groom_columns(df):
     df = df.drop(['Team1', 'Team2', 'Team_id'], axis=1)
     return df
-

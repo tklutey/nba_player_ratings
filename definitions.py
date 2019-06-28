@@ -1,6 +1,6 @@
 import os
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__)) # This is your Project Root
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 DATA_DIR = ROOT_DIR + "/data"
@@ -33,4 +33,3 @@ FT_CLEAR_PATH_2_OF_2_ACTION_TYPE = 26
 FT_FLAGRANT_3_OF_3_ACTION_TYPE = 29
 
 FOUL_EVENT_MSG_TYPE = 6
-

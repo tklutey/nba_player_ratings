@@ -30,6 +30,5 @@ def main():
     write_to_csv(games, DATA_DIR + "/tables/Matchups.csv")
 
 
-
 if __name__ == "__main__":
     print(main())

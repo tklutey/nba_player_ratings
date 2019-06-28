@@ -8,6 +8,7 @@ def main():
     df = create_canonical_event_number(df)
     write_to_csv(df, DATA_DIR + "/tables/Canonical_Events.csv")
 
+
 def create_canonical_event_number(dataframe):
     game_ids = dataframe['Game_id'].unique()
     df = pd.DataFrame()
@@ -15,7 +16,7 @@ def create_canonical_event_number(dataframe):
     for id in game_ids:
         x = dataframe.loc[dataframe['Game_id'] == id]
         df_sorted = x.sort_values(by=['Period', 'PC_Time', 'WC_Time', 'Event_Num'],
-                                   ascending=[True, False, True, True])
+                                  ascending=[True, False, True, True])
 
         df_sorted = df_sorted.reset_index(drop=True)
         df_sorted['Canonical_Game_Event_Num'] = df_sorted.index
@@ -26,6 +27,7 @@ def create_canonical_event_number(dataframe):
     df = df.reset_index(drop=True)
     df = df.rename(columns={"Option1": "Attempted_points"})
     return df
+
 
 if __name__ == "__main__":
     main()

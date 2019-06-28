@@ -4,4 +4,3 @@ def get_rating(df):
     df = df[['Player', 'Game_id', 'OffRtg', 'DefRtg']]
     df = df.rename(columns={"Player": "Player_ID", "Game_ID": "Game_id"})
     return df
-

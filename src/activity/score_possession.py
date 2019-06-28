@@ -14,7 +14,3 @@ def process(df, suffix):
     x['Possessions' + suffix] = 1
     x = x.groupby(['Player', 'Game_id'], as_index=False).sum()
     return x
-
-if __name__ == "__main__":
-    df = pd.DataFrame({'Player1': [1, 2, 3], 'Player2': [1, 2, 3], 'Player3': [1, 2, 3], 'Player4': [4, 5, 6], 'Player5': [4, 5, 6], 'Num_points': [2, 2, 2]})
-    print(process(df, 'offense'))

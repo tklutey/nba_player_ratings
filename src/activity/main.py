@@ -26,14 +26,12 @@ def append_actualized_values(df):
     # End of period
     d = end_period.handle(df)
     # FT
-    # e = free_throw.handle(df)
+    e = free_throw.handle(df)
 
-    result = a.append(b, sort=True).append(c, sort=True).append(d, sort=True)
+    result = a.append(b, sort=True).append(c, sort=True).append(d, sort=True).append(e, sort=True)
 
     return result
 
 
 if __name__ == "__main__":
     process_events()
-
-
