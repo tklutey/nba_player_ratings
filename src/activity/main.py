@@ -1,10 +1,8 @@
-import pandas as pd
-
-from definitions import DATA_DIR, MADE_BASKET_EVENT_MSG_TYPE, MISSED_BASKET_EVENT_MSG_TYPE
+from definitions import DATA_DIR
 from src.activity import get_rating
 from src.activity.matchups import get_matchup_by_game_ids
 from src.converter import player_totals
-from src.handlers import made_fg, missed_fg
+from src.handlers import made_fg, missed_fg, turnover, end_period, free_throw
 from src.util.csv_persistence import read_from_csv
 
 
@@ -23,8 +21,14 @@ def append_actualized_values(df):
     a = made_fg.handle(df)
     # Missed FG followed by def rebound
     b = missed_fg.handle(df)
+    # Turnover
+    c = turnover.handle(df)
+    # End of period
+    d = end_period.handle(df)
+    # FT
+    e = free_throw.handle(df)
 
-    result = a.append(b)
+    result = a.append(b, sort=True).append(c, sort=True).append(d, sort=True).append(e, sort=True)
 
     return result
     # FT
