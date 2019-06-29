@@ -1,6 +1,7 @@
 import pandas as pd
 
 import definitions
+from src.backfill.lineups import canonical_events
 from src.util.csv_persistence import read_from_csv, write_to_csv
 
 GAME_LINEUP_DATA = "/csv/Game_Lineup.csv"
@@ -101,16 +102,16 @@ def get_period_starting_lineups(df):
 
 def get_lineup_row(df_decomposed_lineup):
     df_composed_lineup = pd.DataFrame()
-    if (len(df_decomposed_lineup) != 5):
-        raise Exception("Lineup size = " + len(df_decomposed_lineup))
+    if len(df_decomposed_lineup) != 5 & len(df_decomposed_lineup) != 0:
+        raise Exception("Lineup size = " + str(len(df_decomposed_lineup)))
     row = df_decomposed_lineup.iloc[0]
     df_composed_lineup['Game_id'] = pd.Series(row['Game_id'])
     df_composed_lineup['Team_id'] = pd.Series(row['Team_id'])
     df_composed_lineup['Period'] = pd.Series(row['Period'])
 
     canonical_event_id =\
-        get_canonical_event_id(df_composed_lineup['Game_id'][0],
-                               df_composed_lineup['Period'][0])
+        canonical_events.get_canonical_event_id(df_composed_lineup['Game_id'][0],
+                                                df_composed_lineup['Period'][0])
     df_composed_lineup['Start_Canonical_Game_Event_Num'] \
         = pd.Series(canonical_event_id)
     counter = 1
@@ -120,20 +121,6 @@ def get_lineup_row(df_decomposed_lineup):
         counter = counter + 1
 
     return df_composed_lineup
-
-
-def get_canonical_event_id(game_id, period):
-    df = read_from_csv(definitions.DATA_DIR + "/tables/Canonical_Events.csv")
-    df = df.loc[df['Period'] == period]
-    df = df.loc[df['Game_id'] == game_id]
-    df = df.loc[
-        df['Event_Msg_Type'] == definitions.PERIOD_START_EVENT_MSG_TYPE
-    ]
-    df = df.loc[
-        df['Action_Type'] == definitions.PERIOD_START_ACTION_TYPE
-    ]
-
-    return df['Canonical_Game_Event_Num'].iloc[0]
 
 
 if __name__ == "__main__":
