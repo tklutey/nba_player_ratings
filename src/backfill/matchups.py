@@ -1,7 +1,7 @@
 import pandas as pd
 
 from definitions import RAW_DATA_DIR, DATA_DIR
-from src.backfill.lineups import GAME_LINEUP_DATA
+from src.backfill.lineups.lineups import GAME_LINEUP_DATA
 from src.util.csv_persistence import read_from_csv, write_to_csv
 
 
@@ -23,7 +23,6 @@ def main():
 
         for team_id in team_ids:
             key = 'Team' + str(counter)
-            print(key)
             a[key] = pd.Series(team_id)
             counter = counter + 1
         games = games.append(a)

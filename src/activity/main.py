@@ -1,6 +1,5 @@
 from definitions import DATA_DIR
 from src.activity import get_rating
-from src.activity.matchups import get_matchup_by_game_ids
 from src.converter import player_totals
 from src.handlers import made_fg, missed_fg, turnover, end_period, free_throw
 from src.util import csv_persistence
@@ -8,7 +7,6 @@ from src.util import csv_persistence
 
 def process_events():
     df = csv_persistence.read_from_csv(DATA_DIR + "/tables/Canonical_Events.csv")
-    df = get_matchup_by_game_ids(df)
     x = append_actualized_values(df)
     y = player_totals.get_player_points(x)
     z = get_rating.get_rating(y).reset_index(drop=True)

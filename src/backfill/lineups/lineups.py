@@ -8,38 +8,45 @@ GAME_LINEUP_DATA = "/csv/Game_Lineup.csv"
 
 
 def main():
-    df = read_from_csv(definitions.RAW_DATA_DIR + GAME_LINEUP_DATA)
-    df_lineups = get_period_starting_lineups(df)
-    df_lineups = apply_subs(df_lineups)
+    df_lineups = read_from_csv(definitions.RAW_DATA_DIR + GAME_LINEUP_DATA)
+    df_canonical = read_from_csv(definitions.DATA_DIR + "/tables/Canonical_Events.csv")
+
+    df_lineups = get_period_starting_lineups(df_lineups)
+    df_lineups = apply_event_changes(df_lineups, df_canonical)
     write_to_csv(df_lineups, definitions.DATA_DIR + "/tables/Lineups.csv")
 
 
-def apply_subs(df_lineups):
-    df = read_from_csv(definitions.DATA_DIR + "/tables/Canonical_Events.csv")
-    game_ids = df['Game_id'].unique()
-    for game_id in game_ids:
-        x = df.loc[df['Game_id'] == game_id]
-        team_ids = x['Team_id'].unique()
-        for team_id in team_ids:
-            y = x.loc[x['Team_id'] == team_id]
-            for period in range(1, 4 + 1):
-                z = y.loc[y['Period'] == period]
-                z = z.loc[
-                    z['Event_Msg_Type'] == definitions.SUBSTITUTE_EVENT_MSG_TYPE
-                ]
-                df_lineups = process_substitution(z, df_lineups)
-
-    df_lineups = df_lineups[
-        df_lineups['Start_Canonical_Game_Event_Num'].notnull()
+def apply_event_changes(df_lineups, df_canonical):
+    print("Applying event changes...")
+    df = df_canonical.groupby(['Game_id', 'Team_id'], as_index=False).apply(lambda x: get_period_events(x, df_lineups))
+    df = df[
+        df['Start_Canonical_Game_Event_Num'].notnull()
     ]
-    df_lineups = df_lineups[
-        df_lineups['End_Canonical_Game_Event_Num'].notnull()
+    df = df[
+        df['End_Canonical_Game_Event_Num'].notnull()
     ]
+    return df
 
-    return df_lineups
+
+def get_period_events(df_canonical, df_lineups):
+    df = df_canonical.loc[df_canonical['Period'] != 0]
+    df = df.groupby('Period', as_index=False).apply(lambda x: filter_process_events(x, df_lineups))
+    df = df.reset_index(drop=True)
+    return df
 
 
-def process_substitution(df_sub, df_lineups):
+def filter_process_events(df_canonical, df_lineups):
+    z = df_canonical.loc[
+        (df_canonical['Event_Msg_Type'] == definitions.SUBSTITUTE_EVENT_MSG_TYPE)
+        | (df_canonical['Event_Msg_Type'] == definitions.END_OF_PERIOD_EVENT_MSG_TYPE)
+    ]
+    if len(z) > 0:
+        s = process_event(z, df_lineups)
+        return s
+    return None
+
+
+def process_event(df_sub, df_lineups):
     for i in range(0, len(df_sub)):
         x = df_sub.iloc[i]
         event_id = x['Canonical_Game_Event_Num']
@@ -51,13 +58,17 @@ def process_substitution(df_sub, df_lineups):
 
         previous_lineup = \
             get_previous_lineup(df_lineups, game_id, team_id, period, event_id)
-        sub_column = get_player_to_sub(previous_lineup, player_out)
-        new_lineup = previous_lineup.copy()
-        new_lineup[sub_column] = player_in
-        new_lineup['Start_Canonical_Game_Event_Num'] = event_id
+
+        if x['Event_Msg_Type'] == definitions.SUBSTITUTE_EVENT_MSG_TYPE:
+            new_lineup = previous_lineup.copy()
+
+            sub_column = get_player_to_sub(previous_lineup, player_out)
+            new_lineup[sub_column] = player_in
+            new_lineup['Start_Canonical_Game_Event_Num'] = event_id
+            df_lineups = df_lineups.append(new_lineup, sort=True)
+
         previous_lineup['End_Canonical_Game_Event_Num'] = event_id
-        df_lineups = df_lineups.append(new_lineup)
-        df_lineups = df_lineups.append(previous_lineup)
+        df_lineups = df_lineups.append(previous_lineup, sort=True)
 
     return df_lineups
 
@@ -65,7 +76,7 @@ def process_substitution(df_sub, df_lineups):
 def get_player_to_sub(lineup, player_id):
     for i in range(1, 5+1):
         column_name = "Player" + str(i)
-        if lineup[column_name] == player_id:
+        if lineup[column_name].iloc[0] == player_id:
             return column_name
 
 
@@ -81,23 +92,17 @@ def get_previous_lineup(df_lineups, game_id, team_id, period, event_id):
         df_lineups['Start_Canonical_Game_Event_Num'] == previous_event_id
     ]
 
-    return df_lineups.iloc[0]
+    return df_lineups
 
 
 def get_period_starting_lineups(df):
-    df_lineups = pd.DataFrame()
+    print("Creating period starting lineups...")
+    return df.groupby(['Game_id', 'Team_id']).apply(get_period_lineups)
 
-    game_ids = df['Game_id'].unique()
-    for game_id in game_ids:
-        x = df.loc[df['Game_id'] == game_id]
-        team_ids = x['Team_id'].unique()
-        for team_id in team_ids:
-            y = x.loc[x['Team_id'] == team_id]
-            for period in range(1, 4 + 1):
-                z = y.loc[y['Period'] == period]
-                df_lineup_row = get_lineup_row(z)
-                df_lineups = df_lineups.append(df_lineup_row)
-    return df_lineups
+
+def get_period_lineups(df):
+    df = df.loc[df['Period'] != 0]
+    return df.groupby('Period').apply(get_lineup_row)
 
 
 def get_lineup_row(df_decomposed_lineup):
@@ -119,7 +124,6 @@ def get_lineup_row(df_decomposed_lineup):
         player_id = columns['Person_id']
         df_composed_lineup['Player' + str(counter)] = player_id
         counter = counter + 1
-
     return df_composed_lineup
 
 
