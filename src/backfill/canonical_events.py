@@ -41,7 +41,6 @@ def mirror_period_end(df_canonical):
 
     df = df.append(df_canonical, sort=True)
 
-
     return df
 
 

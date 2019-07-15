@@ -46,14 +46,14 @@ class LineupBackfillTests(unittest.TestCase):
 
     def test_apply_subs(self):
         df_lineups = pd.DataFrame({'Game_id': [1, 1, 1],
-                                    'Period': [1, 2, 3],
-                                    'Team_id': [1, 1, 1],
-                                    'Player1': [1, 1, 1],
-                                    'Player2': [2, 2, 2],
-                                    'Player3': [3, 3, 3],
-                                    'Player4': [4, 4, 4],
-                                    'Player5': [5, 5, 5],
-                                    'Start_Canonical_Game_Event_Num': [1, 5, 10]
+                                   'Period': [1, 2, 3],
+                                   'Team_id': [1, 1, 1],
+                                   'Player1': [1, 1, 1],
+                                   'Player2': [2, 2, 2],
+                                   'Player3': [3, 3, 3],
+                                   'Player4': [4, 4, 4],
+                                   'Player5': [5, 5, 5],
+                                   'Start_Canonical_Game_Event_Num': [1, 5, 10]
                                    })
         df_canonical_events = pd.DataFrame({'Game_id': [1, 1, 1, 1, 1],
                                             'Team_id': [1, 1, 1, 1, 1],
@@ -82,4 +82,3 @@ class LineupBackfillTests(unittest.TestCase):
                                     })
 
         assert_frame_equal(df_output.sort_index(axis=1), df_expected.sort_index(axis=1))
-
