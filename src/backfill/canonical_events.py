@@ -14,23 +14,22 @@ def main():
 
 
 def create_canonical_event_number(dataframe):
-    game_ids = dataframe['Game_id'].unique()
-    df = pd.DataFrame()
-
-    for id in game_ids:
-        x = dataframe.loc[dataframe['Game_id'] == id]
-        df_sorted = x.sort_values(by=['Period', 'PC_Time', 'WC_Time', 'Event_Num'],
-                                  ascending=[True, False, True, True])
-
-        df_sorted = df_sorted.reset_index(drop=True)
-        df_sorted['Canonical_Game_Event_Num'] = df_sorted.index
-
-        df_sorted = df_sorted.drop('Event_Num', axis=1)
-
-        df = df.append(df_sorted)
+    df = dataframe.groupby('Game_id').apply(create_game_event_number)
     df = df.reset_index(drop=True)
     df = df.rename(columns={"Option1": "Attempted_points"})
     return df
+
+
+def create_game_event_number(x):
+    df_sorted = x.sort_values(by=['Period', 'PC_Time', 'WC_Time', 'Event_Num'],
+                              ascending=[True, False, True, True])
+
+    df_sorted = df_sorted.reset_index(drop=True)
+    df_sorted['Canonical_Game_Event_Num'] = df_sorted.index
+
+    df_sorted = df_sorted.drop('Event_Num', axis=1)
+
+    return df_sorted
 
 
 def mirror_period_end(df_canonical):
